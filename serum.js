@@ -8,15 +8,19 @@ const serum =
       const injection = {}
       const test = (...testTag) => def => {
         const name = String.raw(...testTag)
-        injection[toIdentifier(name)] = def
-        tests.push({def, name, it})
+        const watcher = watch(def)
+        injection[toIdentifier(name)] = watcher.promise
+        tests.push({
+          def: watcher.run,
+          params: params(def),
+          name, it})
         return test
       }
 
       test.x = (...testTag) => def => {
         const name = String.raw(...testTag)
-        injection[toIdentifier(name)] = def
-        tests.push({def, name, it: xit})
+        injection[toIdentifier(name)] = Promise.reject(`${name} is disabled`)
+        tests.push({def, name, params: params(def), it: xit})
         return test        
       }
 
@@ -27,7 +31,7 @@ const serum =
               title,
               () => tests.forEach(test =>
                   typeof test.def === 'function' &&
-                    test.it(test.name, inject(injection, test.def)))
+                    test.it(test.name, inject(injection, test.def, test.params)))
             )
           }
         }
@@ -41,17 +45,30 @@ const serum =
 
 const test = module.exports = serum()
 
-const inject = (injection, func) =>
+const params = func => {
+  if (typeof func !== 'function') return []
+  return acorn.parse(`(${func.toString()})`)
+    .body[0].expression.params
+}
+
+const inject = (injection, func, parameters=params(func)) =>
   () =>
     Promise.resolve(injection)
       .then(injection => 
-        Promise.all(params(func).map(p => injection[p.name]))
+        Promise.all(parameters.map(p => injection[p.name]))
       )
-      .then(([...args]) => func(...args))
+      .then(([...args]) => 
+        func(...args)
+      )
 
 const toIdentifier = name => name.replace(/\s/g, '_')
 
 const watch = func => {
+  if (typeof func !== 'function') return {
+    promise: Promise.resolve(func),
+    run: ()=>func,
+  }
+
   let run
   const promise = new Promise(
     (resolve, reject) => {
@@ -85,17 +102,18 @@ test `inject(injection: any, func: any->any) ~> any -> any`
   )  
 .end
 
-test `watch(func: any->any) -> {promise: Promise, run: any->any}`
+test `watch(func: any|any->any) -> {promise: Promise, run: any->any}`
   `resolves its promise with func's result when run is called` (() => {
     const watcher = watch(x => x)
     watcher.run(10)
     return expect(watcher.promise).to.eventually.equal(10)
   })
-.end
 
-const params = func =>
-  acorn.parse(`(${func.toString()})`)
-    .body[0].expression.params
+  `when given a non-function, immediately resolves with it` (() => {
+    const watcher = watch(10)
+    return expect(watcher.promise).to.eventually.equal(10)
+  })
+.end
 
 test `params(func: Function) -> [Parameter]`
   `gets simple formal parameters to an arrow` (() => {
@@ -143,16 +161,18 @@ test `a serum`
   )
 
   `a value` (128)
-  `injects immediate values` ((a_value) =>
+  `injects immediate values` (a_value =>
     expect(a_value).to.equal(128)
   )
 
   `a promise` (Promise.resolve(42))
-  `resolves and injects promises` ((a_promise) =>
+  `resolves and injects promises` (a_promise =>
     expect(a_promise).to.equal(42)
   )
 
   `a function` (() => Promise.resolve('lazy'))
-  `calls and resolves functions` 
+  `calls and resolves functions` (a_function =>
+    expect(a_function).to.equal('lazy')
+  )
 .end
 
