@@ -42,7 +42,7 @@ Or
       `a function` (() => Promise.resolve('lazy'))
       `calls and resolves functions` (a_function =>
          expect(a_function).to.equal('lazy')
-      )
+      )      
    .end
 ```
 

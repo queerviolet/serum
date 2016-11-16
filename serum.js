@@ -2,9 +2,10 @@ const acorn = require('acorn')
 
 const serum =
   ({ describe=global.describe, it=global.it, xit=global.xit }={}) => {
-    const suite = (...suiteTag) => {
+    const suite = parent => (...suiteTag) => {
       const title = String.raw(...suiteTag)
       const tests = []
+      const children = []      
       const injection = {}
       const test = (...testTag) => def => {
         const name = String.raw(...testTag)
@@ -24,23 +25,40 @@ const serum =
         return test        
       }
 
+      const makeDescribe = () =>
+        describe(title, () => {
+          console.log('describing', title)                    
+          tests.forEach(test =>
+            typeof test.def === 'function' &&
+              test.it(test.name, inject(injection, test.def, test.params)))
+          console.log('children=', children)
+          children.forEach(creator => {
+            console.log(creator)
+            creator()
+          })
+        })
+
       Object.defineProperties(test, {
+        test: {
+          get() {
+            return suite({test, children})
+          }
+        },
         end: {
           get() {
-            return describe(
-              title,
-              () => tests.forEach(test =>
-                  typeof test.def === 'function' &&
-                    test.it(test.name, inject(injection, test.def, test.params)))
-            )
+            if (parent) {
+              parent.children.push(makeDescribe)
+              return parent.test
+            }
+            return makeDescribe()
           }
         }
       })
           
       return test
-    }
-    suite.config = config => serum(config)
-    return suite
+    }    
+    suite.config = config => serum(config)(null)
+    return suite(null)
   }
 
 const params = func => {

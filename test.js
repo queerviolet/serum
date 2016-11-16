@@ -81,19 +81,37 @@ test `a serum`
     expect(true).to.equal(false)
   )
 
-  `a value` (128)
-  `injects immediate values` (a_value =>
-    expect(a_value).to.equal(128)
-  )
+  .test `supports nesting`
+    .test `to any depth`
+      .test `so we could keep going`
+        .test `and going`
+          `until we test something` (() =>
+            expect(1).to.equal(1)
+          )
+        .end
+      .end
+    .end
+  .end
 
-  `a promise` (Promise.resolve(42))
-  `resolves and injects promises` (a_promise =>
-    expect(a_promise).to.equal(42)
-  )
+  .test `injection —`
+    `x` (128)
+    `injects immediate values by their argument name` (x =>
+        expect(x).to.equal(128)
+    )
 
-  `a function` (() => Promise.resolve('lazy'))
-  `calls and resolves functions` (a_function =>
-    expect(a_function).to.equal('lazy')
-  )
+    `name with spaces` ('hi there')
+    `converts spaces to underscores` (name_with_spaces =>
+      expect(name_with_spaces).to.equal('hi there')
+    )
+
+    `a promise` (Promise.resolve(42))
+    `resolves promises before injection` (a_promise =>
+        expect(a_promise).to.equal(42)
+    )
+
+    `a function` (() => Promise.resolve('lazy'))
+    `calls functions and resolves their results before injection` (a_function =>
+        expect(a_function).to.equal('lazy')
+    )
+  .end
 .end
-
