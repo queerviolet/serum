@@ -73,7 +73,7 @@ test `a serum`
     expect(1).to.equal(1)
   )
   
-  `can flow tests together` (() =>
+  `accepts tests as tagged template literals` (() =>
     expect(true).to.equal(true)
   )
 
