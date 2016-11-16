@@ -1,8 +1,11 @@
 {
   "name": "serum",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "test": "mocha serum.js"
+  },
   "dependencies": {
     "acorn": "^4.0.3",
     "chai": "^3.5.0",
