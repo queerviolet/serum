@@ -1,10 +1,10 @@
 {
   "name": "serum",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "serum.js",
   "license": "MIT",
   "scripts": {
-    "test": "mocha serum.js"
+    "test": "NODE_ENV=test mocha test.js"
   },
   "dependencies": {
     "acorn": "^4.0.3",
