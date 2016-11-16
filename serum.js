@@ -27,15 +27,10 @@ const serum =
 
       const makeDescribe = () =>
         describe(title, () => {
-          console.log('describing', title)                    
           tests.forEach(test =>
             typeof test.def === 'function' &&
               test.it(test.name, inject(injection, test.def, test.params)))
-          console.log('children=', children)
-          children.forEach(creator => {
-            console.log(creator)
-            creator()
-          })
+          children.forEach(creator => creator())
         })
 
       Object.defineProperties(test, {
