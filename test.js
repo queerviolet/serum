@@ -113,5 +113,16 @@ test `a serum`
     `calls functions and resolves their results before injection` (a_function =>
         expect(a_function).to.equal('lazy')
     )
+
+    .x `a failure` (() => { throw new Error('this failed') })
+    .x `tests that depend on failure also fail` (a_failure =>    
+      expect(a_failure).to.equal(`Error: couldn't resolve a_failure: Error: this failed`)
+    )
+
+    .test `in a child test`
+      `parent values are available for injection` (x =>
+        expect(x).to.equal(128)
+      )
+    .end
   .end
 .end
