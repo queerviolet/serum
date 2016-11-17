@@ -1,13 +1,15 @@
 {
   "name": "serum",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "serum.js",
   "license": "MIT",
   "scripts": {
     "test": "NODE_ENV=test mocha test.js"
   },
   "dependencies": {
-    "acorn": "^4.0.3",
+    "acorn": "^4.0.3"
+  },
+  "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "mocha": "^3.1.2"
